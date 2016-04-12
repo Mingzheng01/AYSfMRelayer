@@ -11,8 +11,10 @@ class SfMServerRelayer;
 class ClientRelayer;
 class RelayerServer: public QTcpServer
 {
+    Q_OBJECT
 public:
     RelayerServer();
+    ~RelayerServer();
     bool startServer();
     bool handerClient(qintptr descriptor);
 protected:
@@ -21,6 +23,7 @@ private slots:
     void onRelayerStatusUpdated();
 private:
     std::vector<std::shared_ptr<SfMServerRelayer>> sfmServerRelayers;
+
 };
 
 #endif // RELAYERSERVER_H

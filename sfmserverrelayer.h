@@ -12,9 +12,12 @@ public:
     enum Status {Idel, Started, Relaying, Dead};
 
     SfMServerRelayer();
-    bool startRelayer(qintptr socketDescriptor);
+    ~SfMServerRelayer();
+    bool startRelayer(qintptr serverSocketDescriptor);
     bool startRelaying(qintptr clientSocketDes);
     Status getStatus() const;
+
+    bool isDead() const;
 
 signals:
     void statusUpdated();
@@ -25,8 +28,8 @@ private slots:
     void onClientSocketReadyRead();
 
 private:
-    std::shared_ptr<QTcpSocket> socket = nullptr;
-    std::shared_ptr<QTcpSocket> clientSocket = nullptr;
+    QTcpSocket *serverSocket = nullptr;
+    QTcpSocket *clientSocket = nullptr;
     Status status = Idel;
 
     void updateStatus(Status status);

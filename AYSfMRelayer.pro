@@ -19,12 +19,14 @@ SOURCES += main.cpp \
     sfmserverrelayer.cpp \
     relayerserver.cpp \
     relayerchannel.cpp \
-    clientserver.cpp
+    clientserver.cpp \
+    relayerconfig.cpp
 
 HEADERS += \
     sfmserverrelayer.h \
     relayerserver.h \
     relayerchannel.h \
-    clientserver.h
+    clientserver.h \
+    relayerconfig.h
 
 DEFINES += DEBUG

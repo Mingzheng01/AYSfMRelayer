@@ -2,16 +2,24 @@
 
 SfMServerRelayer::SfMServerRelayer()
 {
+    this->serverSocket = new QTcpSocket();
+    this->connect(this->serverSocket, SIGNAL(disconnected()), this, SLOT(onSfMServerDisconnected()));
+    this->connect(this->serverSocket, SIGNAL(readyRead()), this, SLOT(onSfMServerReadyRead()));
 
+    this->clientSocket = new QTcpSocket();
+    this->connect(this->clientSocket, SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
+    this->connect(this->clientSocket, SIGNAL(readyRead()), this, SLOT(onClientSocketReadyRead()));
 }
 
-bool SfMServerRelayer::startRelayer(qintptr socketDescriptor)
+SfMServerRelayer::~SfMServerRelayer()
 {
-    this->socket = std::make_shared<QTcpSocket>();
-    this->connect(this->socket.get(), SIGNAL(disconnected()), this, SLOT(onSfMServerDisconnected()));
-    this->connect(this->socket.get(), SIGNAL(readyRead()), this, SLOT(onSfMServerReadyRead()));
+    this->serverSocket->deleteLater();
+    this->clientSocket->deleteLater();
+}
 
-    if (this->socket->setSocketDescriptor(socketDescriptor))
+bool SfMServerRelayer::startRelayer(qintptr serverSocketDescriptor)
+{
+    if (this->serverSocket->setSocketDescriptor(serverSocketDescriptor))
     {
         this->updateStatus(Started);
         return true;
@@ -25,10 +33,6 @@ bool SfMServerRelayer::startRelayer(qintptr socketDescriptor)
 
 bool SfMServerRelayer::startRelaying(qintptr clientSocketDes)
 {
-    this->clientSocket = std::make_shared<QTcpSocket>();
-    this->connect(this->clientSocket.get(), SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
-    this->connect(this->clientSocket.get(), SIGNAL(readyRead()), this, SLOT(onClientSocketReadyRead()));
-
     if (this->clientSocket->setSocketDescriptor(clientSocketDes))
     {
         this->updateStatus(Relaying);
@@ -48,29 +52,36 @@ SfMServerRelayer::Status SfMServerRelayer::getStatus() const
     return this->status;
 }
 
+bool SfMServerRelayer::isDead() const
+{
+    return this->status == Dead;
+}
+
 void SfMServerRelayer::onSfMServerDisconnected()
 {
-    if (this->clientSocket)
-        this->clientSocket->close();
-
     this->updateStatus(Dead);
 }
 
 void SfMServerRelayer::onSfMServerReadyRead()
 {
+    //just relay the data
     if (this->status == Relaying)
     {
-        QByteArray byteArray = this->socket->readAll();
-        this->clientSocket->write(byteArray);
-        this->clientSocket->flush();
+        try {
+            QByteArray byteArray = this->serverSocket->readAll();
+            this->clientSocket->write(byteArray);
+            this->clientSocket->flush();
+        } catch (...) {
+            this->updateStatus(Dead);
+        }
+
     }
+    else
+        this->updateStatus(Dead);
 }
 
 void SfMServerRelayer::onClientDisconnected()
 {
-    if (this->socket)
-        this->socket->close();
-
     this->updateStatus(Dead);
 }
 
@@ -78,17 +89,33 @@ void SfMServerRelayer::onClientSocketReadyRead()
 {
     if (this->status == Relaying)
     {
-        qDebug() << "came here";
-
-        QByteArray byteArray = this->clientSocket->readAll();
-        this->socket->write(byteArray);
-        this->socket->flush();
+        try {
+            QByteArray byteArray = this->clientSocket->readAll();
+            this->serverSocket->write(byteArray);
+            this->serverSocket->flush();
+        } catch (...) {
+            this->updateStatus(Dead);
+        }
     }
+    else
+        this->updateStatus(Dead);
 }
 
-void SfMServerRelayer::updateStatus(SfMServerRelayer::Status status)
+void SfMServerRelayer::updateStatus(SfMServerRelayer::Status mstatus)
 {
-    this->status = status;
+    if (mstatus == this->status)
+        return;
+
+    this->status = mstatus;
+
+    //close both the serverSocket when in closed mode
+    if (this->status == Dead)
+    {
+        this->serverSocket->close();
+        this->clientSocket->close();
+
+    }
+
     emit statusUpdated();
 }
 
