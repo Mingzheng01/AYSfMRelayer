@@ -7,23 +7,24 @@
 #include <QObject>
 #include <QTcpServer>
 
-class SfMServerRelayer;
+class Relayer;
 class ClientRelayer;
 class RelayerServer: public QTcpServer
 {
     Q_OBJECT
 public:
-    RelayerServer();
+    RelayerServer(int port);
     ~RelayerServer();
     bool startServer();
     bool handerClient(qintptr descriptor);
+    int getNumReadyRelayers() const;
 protected:
     void incomingConnection(qintptr handle);
 private slots:
     void onRelayerStatusUpdated();
 private:
-    std::vector<std::shared_ptr<SfMServerRelayer>> sfmServerRelayers;
-
+    std::vector<std::shared_ptr<Relayer>> serverRelayers;
+    int port = 17689;
 };
 
 #endif // RELAYERSERVER_H

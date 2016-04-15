@@ -1,0 +1,6 @@
+<root>
+	<user_client_server_port>16986</user_client_server_port>
+	<sfm_client_server_port>16568</sfm_client_server_port>
+	<user_relayer_server_port>16880</user_relayer_server_port>
+	<sfm_relayer_server_port>17858</sfm_relayer_server_port>
+</root>

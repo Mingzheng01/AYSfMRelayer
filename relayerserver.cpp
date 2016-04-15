@@ -1,16 +1,10 @@
 #include "relayerserver.h"
-#include "sfmserverrelayer.h"
+#include "relayer.h"
 #include <QNetworkInterface>
 #include <QThread>
-RelayerServer::RelayerServer()
+RelayerServer::RelayerServer(int port): port(port)
 {
-#ifdef DEBUG
-    for (QHostAddress address : QNetworkInterface::allAddresses())
-    {
-        if (address.protocol() == QAbstractSocket::IPv4Protocol)
-            qDebug() << address.toString();
-    }
-#endif
+
 }
 
 RelayerServer::~RelayerServer()
@@ -19,7 +13,7 @@ RelayerServer::~RelayerServer()
 
 bool RelayerServer::startServer()
 {
-    if (this->listen(QHostAddress::Any, 18669))
+    if (this->listen(QHostAddress::Any, this->port))
     {
 #ifdef DEBUG
         qDebug() << "relayer server started";
@@ -38,15 +32,23 @@ bool RelayerServer::startServer()
 
 bool RelayerServer::handerClient(qintptr descriptor)
 {
-    for (std::shared_ptr<SfMServerRelayer> relayer : this->sfmServerRelayers)
+    for (std::shared_ptr<Relayer> relayer : this->serverRelayers)
     {
-        if (relayer->getStatus() == SfMServerRelayer::Status::Started)
+        if (relayer->getStatus() == Relayer::Status::Started)
         {
             relayer->startRelaying(descriptor);
             return true;
         }
     }
     return false;
+}
+
+int RelayerServer::getNumReadyRelayers() const
+{
+    return std::count_if(this->serverRelayers.begin(), this->serverRelayers.end(), [](std::shared_ptr<Relayer> relayer)->bool
+    {
+       return  relayer->getStatus() == Relayer::Status::Started;
+    });
 }
 
 void RelayerServer::incomingConnection(qintptr handle)
@@ -56,11 +58,11 @@ void RelayerServer::incomingConnection(qintptr handle)
     qDebug() << "incommig sfm server connection with des : " << handle;
 #endif
 
-    std::shared_ptr<SfMServerRelayer> relayer = std::make_shared<SfMServerRelayer>();
+    std::shared_ptr<Relayer> relayer = std::make_shared<Relayer>();
     if (relayer->startRelayer(handle))
     {
         this->connect(relayer.get(), SIGNAL(statusUpdated()), this, SLOT(onRelayerStatusUpdated()));
-        this->sfmServerRelayers.push_back(relayer);
+        this->serverRelayers.push_back(relayer);
 
 
 #ifdef DEBUG
@@ -79,12 +81,12 @@ void RelayerServer::onRelayerStatusUpdated()
 {
     //check and delete the dead relayers
     //remove the clients these are finished
-    auto newEndItr = std::remove_if(this->sfmServerRelayers.begin(), this->sfmServerRelayers.end(), [&](std::shared_ptr<SfMServerRelayer> relayer)->bool{
+    auto newEndItr = std::remove_if(this->serverRelayers.begin(), this->serverRelayers.end(), [&](std::shared_ptr<Relayer> relayer)->bool{
        return relayer->isDead();
     });
-    this->sfmServerRelayers.erase(newEndItr, this->sfmServerRelayers.end());
+    this->serverRelayers.erase(newEndItr, this->serverRelayers.end());
 
 #ifdef DEBUG
-    qDebug() << "relayer status updated (current relayer number : " << this->sfmServerRelayers.size() << " )";
+    qDebug() << "relayer status updated (current relayer number : " << this->serverRelayers.size() << " )";
 #endif
 }

@@ -1,14 +1,14 @@
 #include "clientserver.h"
 #include "relayerserver.h"
 
-ClientServer::ClientServer()
+ClientServer::ClientServer(int port): port(port)
 {
 
 }
 
 bool ClientServer::startServer()
 {
-    if (this->listen(QHostAddress::Any, 18499))
+    if (this->listen(QHostAddress::Any, this->port))
     {
 #ifdef DEBUG
         qDebug() << "clinet server started";

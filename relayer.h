@@ -5,14 +5,14 @@
 #include <QTcpSocket>
 #include <QObject>
 
-class SfMServerRelayer: public QObject
+class Relayer: public QObject
 {
     Q_OBJECT
 public:
     enum Status {Idel, Started, Relaying, Dead};
 
-    SfMServerRelayer();
-    ~SfMServerRelayer();
+    Relayer();
+    ~Relayer();
     bool startRelayer(qintptr serverSocketDescriptor);
     bool startRelaying(qintptr clientSocketDes);
     Status getStatus() const;

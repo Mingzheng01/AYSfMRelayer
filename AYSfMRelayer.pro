@@ -16,17 +16,16 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-    sfmserverrelayer.cpp \
     relayerserver.cpp \
-    relayerchannel.cpp \
+    relayerconfig.cpp \
     clientserver.cpp \
-    relayerconfig.cpp
+    relayer.cpp
 
 HEADERS += \
-    sfmserverrelayer.h \
     relayerserver.h \
     relayerchannel.h \
+    relayerconfig.h \
     clientserver.h \
-    relayerconfig.h
+    relayer.h
 
 DEFINES += DEBUG
