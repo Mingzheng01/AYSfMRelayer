@@ -28,8 +28,8 @@ private slots:
     void onClientSocketReadyRead();
 
 private:
-    QTcpSocket *serverSocket = nullptr;
-    QTcpSocket *clientSocket = nullptr;
+    std::shared_ptr<QTcpSocket> serverSocket = nullptr;
+    std::shared_ptr<QTcpSocket> clientSocket = nullptr;
     Status status = Idel;
 
     void updateStatus(Status status);

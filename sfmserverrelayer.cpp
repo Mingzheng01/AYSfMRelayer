@@ -2,19 +2,21 @@
 
 SfMServerRelayer::SfMServerRelayer()
 {
-    this->serverSocket = new QTcpSocket();
-    this->connect(this->serverSocket, SIGNAL(disconnected()), this, SLOT(onSfMServerDisconnected()));
-    this->connect(this->serverSocket, SIGNAL(readyRead()), this, SLOT(onSfMServerReadyRead()));
+    this->serverSocket = std::shared_ptr<QTcpSocket>(new QTcpSocket(), [](QTcpSocket *s){
+            s->deleteLater();
+    });
+    this->connect(this->serverSocket.get(), SIGNAL(disconnected()), this, SLOT(onSfMServerDisconnected()));
+    this->connect(this->serverSocket.get(), SIGNAL(readyRead()), this, SLOT(onSfMServerReadyRead()));
 
-    this->clientSocket = new QTcpSocket();
-    this->connect(this->clientSocket, SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
-    this->connect(this->clientSocket, SIGNAL(readyRead()), this, SLOT(onClientSocketReadyRead()));
+    this->clientSocket = std::shared_ptr<QTcpSocket>(new QTcpSocket(), [](QTcpSocket *s){
+            s->deleteLater();
+    });
+    this->connect(this->clientSocket.get(), SIGNAL(disconnected()), this, SLOT(onClientDisconnected()));
+    this->connect(this->clientSocket.get(), SIGNAL(readyRead()), this, SLOT(onClientSocketReadyRead()));
 }
 
 SfMServerRelayer::~SfMServerRelayer()
 {
-    this->serverSocket->deleteLater();
-    this->clientSocket->deleteLater();
 }
 
 bool SfMServerRelayer::startRelayer(qintptr serverSocketDescriptor)
