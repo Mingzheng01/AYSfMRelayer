@@ -113,7 +113,6 @@ void SfMServerRelayer::updateStatus(SfMServerRelayer::Status mstatus)
     {
         this->serverSocket->close();
         this->clientSocket->close();
-
     }
 
     emit statusUpdated();
