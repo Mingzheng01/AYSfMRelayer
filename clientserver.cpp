@@ -49,7 +49,9 @@ void ClientServer::incomingConnection(qintptr handle)
         }
         else
         {
-
+#ifdef DEBUG
+    qDebug() << "incoming client connection handled failed";
+#endif
         }
     }
 }

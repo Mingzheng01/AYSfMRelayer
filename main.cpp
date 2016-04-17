@@ -16,12 +16,11 @@ int main(int argc, char *argv[])
     std::shared_ptr<RelayerServer> userRelayerServer = std::make_shared<RelayerServer>(config.getIntConfigAttr("user_relayer_server_port"));
     userRelayerServer->startServer();
 
-
     ClientServer sfmClientServer(config.getIntConfigAttr("sfm_client_server_port"));
     sfmClientServer.setRelayerServer(sfmRelayerServer);
     sfmClientServer.startServer();
 
-    ClientServer userClientServer(config.getIntConfigAttr("user_client_server"));
+    ClientServer userClientServer(config.getIntConfigAttr("user_client_server_port"));
     userClientServer.setRelayerServer(userRelayerServer);
     userClientServer.startServer();
 

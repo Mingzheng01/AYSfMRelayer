@@ -2,6 +2,7 @@
 #include "relayer.h"
 #include <QNetworkInterface>
 #include <QThread>
+
 RelayerServer::RelayerServer(int port): port(port)
 {
 
@@ -32,6 +33,7 @@ bool RelayerServer::startServer()
 
 bool RelayerServer::handerClient(qintptr descriptor)
 {
+
     for (std::shared_ptr<Relayer> relayer : this->serverRelayers)
     {
         if (relayer->getStatus() == Relayer::Status::Started)
@@ -61,7 +63,7 @@ void RelayerServer::incomingConnection(qintptr handle)
     std::shared_ptr<Relayer> relayer = std::make_shared<Relayer>();
     if (relayer->startRelayer(handle))
     {
-        this->connect(relayer.get(), SIGNAL(statusUpdated()), this, SLOT(onRelayerStatusUpdated()));
+        this->connect(relayer.get(), SIGNAL(statusUpdated()), this, SLOT(onRelayerStatusUpdated())), Qt::QueuedConnection; //should happen asyn
         this->serverRelayers.push_back(relayer);
 
 

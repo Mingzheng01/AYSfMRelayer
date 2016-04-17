@@ -23,7 +23,6 @@ SOURCES += main.cpp \
 
 HEADERS += \
     relayerserver.h \
-    relayerchannel.h \
     relayerconfig.h \
     clientserver.h \
     relayer.h

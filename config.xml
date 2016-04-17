@@ -1,3 +1,4 @@
+<!--This is a configuration for the Relayer-->
 <root>
 	<user_client_server_port>16986</user_client_server_port>
 	<sfm_client_server_port>16568</sfm_client_server_port>
