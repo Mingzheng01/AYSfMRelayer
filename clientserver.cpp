@@ -1,5 +1,6 @@
 #include "clientserver.h"
 #include "relayerserver.h"
+#include <QTcpSocket>
 
 ClientServer::ClientServer(int port): port(port)
 {
@@ -52,6 +53,12 @@ void ClientServer::incomingConnection(qintptr handle)
 #ifdef DEBUG
     qDebug() << "incoming client connection handled failed";
 #endif
+
+        // create the socket and close the connection
+            QTcpSocket *socket = new QTcpSocket(this);
+            socket->setSocketDescriptor(handle);
+            socket->close();
+            socket->deleteLater();
         }
     }
 }
