@@ -22,6 +22,9 @@ Relayer::~Relayer()
 
 bool Relayer::startRelayer(qintptr serverSocketDescriptor)
 {
+    if (this->status != Idel)
+        return false;
+
     if (this->serverSocket->setSocketDescriptor(serverSocketDescriptor))
     {
         this->updateStatus(Started);
@@ -36,6 +39,9 @@ bool Relayer::startRelayer(qintptr serverSocketDescriptor)
 
 bool Relayer::startRelaying(qintptr clientSocketDes)
 {
+    if (this->status != Started)
+        return false;
+
     if (this->clientSocket->setSocketDescriptor(clientSocketDes))
     {
         this->updateStatus(Relaying);
@@ -67,6 +73,10 @@ void Relayer::onSfMServerDisconnected()
 
 void Relayer::onSfMServerReadyRead()
 {
+
+#ifdef DEBUG
+    qDebug() << "server ready read..";
+#endif
     while (this->serverSocket->bytesAvailable() > 0)
     {
         //just relay the data
@@ -76,6 +86,9 @@ void Relayer::onSfMServerReadyRead()
                 QByteArray byteArray = this->serverSocket->readAll();
                 this->clientSocket->write(byteArray);
                 this->clientSocket->flush();
+#ifdef DEBUG
+    qDebug() << "server forwarded to client..";
+#endif
             } catch (...) {
                 this->updateStatus(Dead);
                 break;
@@ -96,6 +109,10 @@ void Relayer::onClientDisconnected()
 
 void Relayer::onClientSocketReadyRead()
 {
+#ifdef DEBUG
+    qDebug() << "client ready read..";
+#endif
+
     while (this->clientSocket->bytesAvailable() > 0)
     {
         if (this->status == Relaying)
@@ -104,6 +121,9 @@ void Relayer::onClientSocketReadyRead()
                 QByteArray byteArray = this->clientSocket->readAll();
                 this->serverSocket->write(byteArray);
                 this->serverSocket->flush();
+#ifdef DEBUG
+    qDebug() << "client forwarded to server..";
+#endif
             } catch (...) {
                 this->updateStatus(Dead);
                 break;

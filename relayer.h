@@ -16,7 +16,6 @@ public:
     bool startRelayer(qintptr serverSocketDescriptor);
     bool startRelaying(qintptr clientSocketDes);
     Status getStatus() const;
-
     bool isDead() const;
 
 signals:
