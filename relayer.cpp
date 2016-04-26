@@ -67,20 +67,26 @@ void Relayer::onSfMServerDisconnected()
 
 void Relayer::onSfMServerReadyRead()
 {
-    //just relay the data
-    if (this->status == Relaying)
+    while (this->serverSocket->bytesAvailable() > 0)
     {
-        try {
-            QByteArray byteArray = this->serverSocket->readAll();
-            this->clientSocket->write(byteArray);
-            this->clientSocket->flush();
-        } catch (...) {
-            this->updateStatus(Dead);
+        //just relay the data
+        if (this->status == Relaying)
+        {
+            try {
+                QByteArray byteArray = this->serverSocket->readAll();
+                this->clientSocket->write(byteArray);
+                this->clientSocket->flush();
+            } catch (...) {
+                this->updateStatus(Dead);
+                break;
+            }
         }
-
+        else
+        {
+            this->updateStatus(Dead);
+            break;
+        }
     }
-    else
-        this->updateStatus(Dead);
 }
 
 void Relayer::onClientDisconnected()
@@ -90,18 +96,26 @@ void Relayer::onClientDisconnected()
 
 void Relayer::onClientSocketReadyRead()
 {
-    if (this->status == Relaying)
+    while (this->clientSocket->bytesAvailable() > 0)
     {
-        try {
-            QByteArray byteArray = this->clientSocket->readAll();
-            this->serverSocket->write(byteArray);
-            this->serverSocket->flush();
-        } catch (...) {
-            this->updateStatus(Dead);
+        if (this->status == Relaying)
+        {
+            try {
+                QByteArray byteArray = this->clientSocket->readAll();
+                this->serverSocket->write(byteArray);
+                this->serverSocket->flush();
+            } catch (...) {
+                this->updateStatus(Dead);
+                break;
+            }
         }
+        else
+        {
+            this->updateStatus(Dead);
+            break;
+        }
+
     }
-    else
-        this->updateStatus(Dead);
 }
 
 void Relayer::updateStatus(Relayer::Status mstatus)
