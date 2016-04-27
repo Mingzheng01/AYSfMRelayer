@@ -33,13 +33,14 @@ bool RelayerServer::startServer()
 
 bool RelayerServer::handerClient(qintptr descriptor)
 {
-
     for (std::shared_ptr<Relayer> relayer : this->serverRelayers)
     {
         if (relayer->getStatus() == Relayer::Status::Started)
         {
-            relayer->startRelaying(descriptor);
-            return true;
+            if (relayer->startRelaying(descriptor))
+                return true;
+            else
+                continue;
         }
     }
     return false;

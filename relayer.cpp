@@ -27,6 +27,9 @@ Relayer::~Relayer()
 
 bool Relayer::startRelayer(qintptr serverSocketDescriptor)
 {
+    if (this->status != Idel)
+        return false;
+
     if (this->serverSocket->setSocketDescriptor(serverSocketDescriptor))
     {
         this->updateStatus(Started);
@@ -42,6 +45,9 @@ bool Relayer::startRelayer(qintptr serverSocketDescriptor)
 
 bool Relayer::startRelaying(qintptr clientSocketDes)
 {
+    if (this->status != Started)
+        return false;
+
     if (this->clientSocket->setSocketDescriptor(clientSocketDes))
     {
         this->updateStatus(Relaying);
@@ -84,6 +90,10 @@ void Relayer::onSfMServerDisconnected()
 
 void Relayer::onSfMServerReadyRead()
 {
+
+#ifdef DEBUG
+    qDebug() << "server ready read..";
+#endif
     while (this->serverSocket->bytesAvailable() > 0)
     {
 
@@ -96,6 +106,7 @@ void Relayer::onSfMServerReadyRead()
                 qDebug() << "start server forwarding to client. availiable:" << this->serverSocket->bytesAvailable() << " on thread:" << QThread::currentThreadId();
 #endif
                 QByteArray byteArray = this->serverSocket->readAll();
+<<<<<<< HEAD
                 if (! sendByteArray(byteArray, this->clientSocket))
                 {
 #ifdef DEBUG
@@ -109,6 +120,13 @@ void Relayer::onSfMServerReadyRead()
                 qDebug() << "server forwarded to client." << " bytes:" << byteArray.size() << " t :" << QDateTime::currentMSecsSinceEpoch() - time << "ms ";
 #endif
 
+=======
+                this->clientSocket->write(byteArray);
+                this->clientSocket->flush();
+#ifdef DEBUG
+    qDebug() << "server forwarded to client..";
+#endif
+>>>>>>> origin/master
             } catch (...) {
                 this->updateStatus(Dead);
                 break;
@@ -129,6 +147,10 @@ void Relayer::onClientDisconnected()
 
 void Relayer::onClientSocketReadyRead()
 {
+#ifdef DEBUG
+    qDebug() << "client ready read..";
+#endif
+
     while (this->clientSocket->bytesAvailable() > 0)
     {
         if (this->status == Relaying)
@@ -140,6 +162,7 @@ void Relayer::onClientSocketReadyRead()
                 qDebug() << "start client forwarding to server. availiable:" << this->clientSocket->bytesAvailable() << " on thread:" << QThread::currentThreadId();;
 #endif
                 QByteArray byteArray = this->clientSocket->readAll();
+<<<<<<< HEAD
                 if (! sendByteArray(byteArray, this->serverSocket))
                 {
 #ifdef DEBUG
@@ -153,6 +176,13 @@ void Relayer::onClientSocketReadyRead()
                 qDebug() << "client forwarded to server." << " bytes:" << byteArray.size() << " t : " << QDateTime::currentMSecsSinceEpoch() - time << "ms ";
 #endif
 
+=======
+                this->serverSocket->write(byteArray);
+                this->serverSocket->flush();
+#ifdef DEBUG
+    qDebug() << "client forwarded to server..";
+#endif
+>>>>>>> origin/master
             } catch (...) {
                 this->updateStatus(Dead);
                 break;

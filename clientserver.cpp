@@ -19,7 +19,7 @@ bool ClientServer::startServer()
     else
     {
 #ifdef DEBUG
-        qDebug() << "clinet server starting failed";
+        qDebug() << "client server starting failed";
 #endif
         return false;
     }
@@ -37,8 +37,12 @@ void ClientServer::setRelayerServer(std::shared_ptr<RelayerServer> server)
 
 void ClientServer::incomingConnection(qintptr handle)
 {
+
+
 #ifdef DEBUG
-    qDebug() << "incoming client connection";
+    static long long counter = 0;
+    qDebug() << "incoming client connection on port : " << this->port << " #" << counter;
+    ++counter;
 #endif
     if (this->relayerServer)
     {
