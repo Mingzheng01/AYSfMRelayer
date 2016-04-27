@@ -55,26 +55,28 @@ int RelayerServer::getNumReadyRelayers() const
 
 void RelayerServer::incomingConnection(qintptr handle)
 {
-
 #ifdef DEBUG
-    qDebug() << "incommig sfm server connection with des : " << handle;
+    qDebug() << "incommig sfm server connection with des : " << handle << " on thread:" << QThread::currentThreadId();
 #endif
 
-    std::shared_ptr<Relayer> relayer = std::make_shared<Relayer>();
+    std::shared_ptr<Relayer> relayer = std::shared_ptr<Relayer>(new Relayer(), [](Relayer *r){
+         r->deleteLater();
+    });
+
+
     if (relayer->startRelayer(handle))
     {
-        this->connect(relayer.get(), SIGNAL(statusUpdated()), this, SLOT(onRelayerStatusUpdated())), Qt::QueuedConnection; //should happen asyn
+        this->connect(relayer.get(), SIGNAL(statusUpdated()), this, SLOT(onRelayerStatusUpdated()), Qt::QueuedConnection); //should happen asyn
         this->serverRelayers.push_back(relayer);
 
-
 #ifdef DEBUG
-    qDebug() << "start relayer succeed";
+        qDebug() << "start relayer succeed";
 #endif
     }
     else
     {
 #ifdef DEBUG
-    qDebug() << "start relayer failed";
+        qDebug() << "start relayer failed";
 #endif
     }
 }

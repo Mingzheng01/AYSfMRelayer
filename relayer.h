@@ -4,12 +4,13 @@
 #include <memory>
 #include <QTcpSocket>
 #include <QObject>
+#include <QThread>
 
-class Relayer: public QObject
+class Relayer: public QThread
 {
     Q_OBJECT
 public:
-    enum Status {Idel, Started, Relaying, Dead};
+    enum Status {Idel, Ready, Started, Relaying, Dead};
 
     Relayer();
     ~Relayer();
@@ -18,6 +19,9 @@ public:
     Status getStatus() const;
 
     bool isDead() const;
+
+protected:
+    void run();
 
 signals:
     void statusUpdated();
@@ -31,8 +35,10 @@ private:
     std::shared_ptr<QTcpSocket> serverSocket = nullptr;
     std::shared_ptr<QTcpSocket> clientSocket = nullptr;
     Status status = Idel;
+    int sendingPacketSize = 256;
 
     void updateStatus(Status status);
+    bool sendByteArray(const QByteArray &array, std::shared_ptr<QTcpSocket> socket);
 };
 
 #endif // SFMSERVERRELAYER_H
